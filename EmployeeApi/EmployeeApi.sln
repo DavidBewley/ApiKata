@@ -3,11 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeApi", "EmployeeApi\EmployeeApi.csproj", "{55B07089-4C84-489B-8219-4218A4C7ABF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeApi", "EmployeeApi\EmployeeApi.csproj", "{55B07089-4C84-489B-8219-4218A4C7ABF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{4286C413-BB25-4B2E-8EEF-AA5B07C6FFB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{4286C413-BB25-4B2E-8EEF-AA5B07C6FFB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{134A9CF0-B4A3-43DB-8C67-3FCD33218A43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{134A9CF0-B4A3-43DB-8C67-3FCD33218A43}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{D2BA06DA-94D2-4A64-B702-03BD0FF0AE9F}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
