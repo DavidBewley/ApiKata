@@ -31,7 +31,12 @@ namespace EmployeeApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Employee employee)
         {
-            return StatusCode(501);
+            if (string.IsNullOrEmpty(employee.Name) || employee.StartDate == DateTime.MinValue)
+                return BadRequest("Name or start date is missing");
+
+            var createdEmployee = await _employeeProcessor.CreateEmployee(employee);
+
+            return Ok(createdEmployee);
         }
 
         [HttpPut]

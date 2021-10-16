@@ -12,7 +12,7 @@ namespace Tests
 {
     public class EmployeeTests
     {
-        private static Employee _foundEmployee;
+        private static Employee _processedEmployee;
         private static Employee _expectedEmployee;
 
         private static Mock<IEmployeeStore> _employeeStore;
@@ -34,16 +34,16 @@ namespace Tests
                     .ReturnsAsync(_expectedEmployee);
 
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _foundEmployee = processor.FindEmployee(_expectedEmployee.Id).Result;
+                _processedEmployee = processor.FindEmployee(_expectedEmployee.Id).Result;
             }
 
             [Fact]
             public void EmployeeIsFound()
-                => _foundEmployee.Should().NotBeNull();
+                => _processedEmployee.Should().NotBeNull();
 
             [Fact]
             public void ExpectedEmployeeIsFound()
-                => _foundEmployee.Should().Be(_expectedEmployee);
+                => _processedEmployee.Should().Be(_expectedEmployee);
 
             [Fact]
             public void DataStoreIsCalledWithCorrectId()
@@ -60,16 +60,44 @@ namespace Tests
 
                 _searchId = Guid.NewGuid();
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _foundEmployee = processor.FindEmployee(_searchId).Result;
+                _processedEmployee = processor.FindEmployee(_searchId).Result;
             }
 
             [Fact]
             public void EmployeeIsNotFound()
-                => _foundEmployee.Should().BeNull();
+                => _processedEmployee.Should().BeNull();
 
             [Fact]
             public void DataStoreIsCalledWithCorrectId()
                 => _employeeStore.Verify(e => e.FindEmployee(It.Is<Guid>(i => i == _searchId)));
+        }
+
+        public class WhenCreatingAnEmployee
+        {
+            private readonly string _createEmployeeGuid;
+            private Employee _callBackEmployee;
+
+            public WhenCreatingAnEmployee()
+            {
+                var createEmployee = EmployeeFaker.Generate(1).Single();
+                _createEmployeeGuid = createEmployee.Id.ToString();
+
+                _employeeStore = new Mock<IEmployeeStore>();
+                _employeeStore
+                    .Setup(e => e.CreateEmployee(It.IsAny<Employee>()))
+                    .Callback<Employee>(e => _callBackEmployee = e);
+
+                var processor = new EmployeeProcessor(_employeeStore.Object);
+                _processedEmployee = processor.CreateEmployee(createEmployee).Result;
+            }
+
+            [Fact]
+            public void EmployeeIsGivenANewGuid()
+                => _processedEmployee.Id.ToString().Should().NotBe(_createEmployeeGuid);
+
+            [Fact]
+            public void DataStoreCreateIsCalledWithGivenEmployee()
+                => _employeeStore.Verify(e => e.CreateEmployee(It.Is<Employee>(e=>e == _callBackEmployee)));
         }
 
     }
