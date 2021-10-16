@@ -15,13 +15,12 @@ namespace Tests
         private static Employee _foundEmployee;
         private static Employee _expectedEmployee;
 
-        private static readonly Mock<IEmployeeStore> EmployeeStore = new Mock<IEmployeeStore>();
+        private static Mock<IEmployeeStore> _employeeStore;
 
         private static readonly Faker<Employee> EmployeeFaker = new Faker<Employee>()
             .RuleFor(e => e.Id, Guid.NewGuid())
             .RuleFor(e => e.Name, f => f.Name.FullName())
             .RuleFor(e => e.StartDate, f => f.Date.Past());
-
 
         public class WhenAnEmployeeIsSearchedForAndIsPresentInTheDataStore
         {
@@ -29,11 +28,12 @@ namespace Tests
             {
                 _expectedEmployee = EmployeeFaker.Generate(1).Single();
 
-                EmployeeStore
+                _employeeStore = new Mock<IEmployeeStore>();
+                _employeeStore
                     .Setup(s => s.FindEmployee(It.IsAny<Guid>()))
                     .ReturnsAsync(_expectedEmployee);
 
-                var processor = new EmployeeProcessor(EmployeeStore.Object);
+                var processor = new EmployeeProcessor(_employeeStore.Object);
                 _foundEmployee = processor.FindEmployee(_expectedEmployee.Id).Result;
             }
 
@@ -47,7 +47,7 @@ namespace Tests
 
             [Fact]
             public void DataStoreIsCalledWithCorrectId()
-                => EmployeeStore.Verify(e => e.FindEmployee(It.Is<Guid>(i => i == _expectedEmployee.Id)));
+                => _employeeStore.Verify(e => e.FindEmployee(It.Is<Guid>(i => i == _expectedEmployee.Id)));
         }
 
         public class WhenAnEmployeeIsSearchedForAndIsNotPresentInTheDataStore
@@ -56,8 +56,10 @@ namespace Tests
 
             public WhenAnEmployeeIsSearchedForAndIsNotPresentInTheDataStore()
             {
+                _employeeStore = new Mock<IEmployeeStore>();
+
                 _searchId = Guid.NewGuid();
-                var processor = new EmployeeProcessor(EmployeeStore.Object);
+                var processor = new EmployeeProcessor(_employeeStore.Object);
                 _foundEmployee = processor.FindEmployee(_searchId).Result;
             }
 
@@ -67,7 +69,7 @@ namespace Tests
 
             [Fact]
             public void DataStoreIsCalledWithCorrectId()
-                => EmployeeStore.Verify(e => e.FindEmployee(It.Is<Guid>(i => i == _searchId)));
+                => _employeeStore.Verify(e => e.FindEmployee(It.Is<Guid>(i => i == _searchId)));
         }
 
     }
