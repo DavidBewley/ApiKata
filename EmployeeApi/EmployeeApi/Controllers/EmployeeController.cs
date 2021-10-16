@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Core.Models;
+using Core.Processors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeApi.Controllers
@@ -9,11 +10,22 @@ namespace EmployeeApi.Controllers
     [ApiController]
     public class EmployeeController : ControllerBase
     {
+        private readonly EmployeeProcessor _employeeProcessor;
+
+        public EmployeeController(EmployeeProcessor employeeProcessor)
+        {
+            _employeeProcessor = employeeProcessor;
+        }
+
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return StatusCode(501);
+            var employee = await _employeeProcessor.FindEmployee(id);
+            if (employee == null)
+                return NoContent();
+
+            return Ok(employee);
         }
 
         [HttpPost]

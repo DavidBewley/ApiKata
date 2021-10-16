@@ -1,3 +1,6 @@
+using Core.Processors;
+using Core.Services;
+using Core.Services.Concrete;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +21,9 @@ namespace EmployeeApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IEmployeeStore, EmployeeStoreApi>();
+            services.AddTransient<EmployeeProcessor>();
+
             services.AddControllers();
         }
 

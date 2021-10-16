@@ -10,7 +10,7 @@ namespace Core.Services.Concrete
     public class EmployeeStoreApi : IEmployeeStore
     {
         private SqliteConnection _databaseConnection;
-        private const string DatabaseName = "LocalDb";
+        private const string DatabaseName = "Data Source=LocalDb.sqlite";
         private const string TableName = "Employees";
 
         public EmployeeStoreApi()
@@ -33,7 +33,7 @@ namespace Core.Services.Concrete
         {
             OpenDatabaseConnection();
 
-            return (await _databaseConnection.QueryAsync<Employee>($"SELECT TOP 1 [Id],[Name],[StartDate] FROM [{TableName}] WHERE [Id] = '{id}'")).FirstOrDefault();
+            return (await _databaseConnection.QueryAsync<Employee>($"SELECT rowid AS [Id],[Name],[StartDate] FROM [{TableName}] WHERE [Id] = '{id}';")).FirstOrDefault();
         }
 
         public async Task CreateEmployee(Employee employee)
@@ -45,13 +45,13 @@ namespace Core.Services.Concrete
         public async Task UpdateEmployee(Employee employee)
         {
             OpenDatabaseConnection();
-            await _databaseConnection.ExecuteAsync($"UPDATE [{TableName}] SET [Name] = @Name, [StartDate] = @StartDate WHERE [Id] = @Id", employee);
+            await _databaseConnection.ExecuteAsync($"UPDATE [{TableName}] SET [Name] = @Name, [StartDate] = @StartDate WHERE [Id] = @Id;", employee);
         }
 
         public async Task DeleteEmployee(Guid id)
         {
             OpenDatabaseConnection();
-            await _databaseConnection.ExecuteAsync($"DELETE FROM [{TableName}] WHERE [Id] = @id", id);
+            await _databaseConnection.ExecuteAsync($"DELETE FROM [{TableName}] WHERE [Id] = @id;", id);
         }
 
         private void OpenDatabaseConnection() 
