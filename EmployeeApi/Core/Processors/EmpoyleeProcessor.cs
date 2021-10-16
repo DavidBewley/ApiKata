@@ -23,5 +23,11 @@ namespace Core.Processors
             await _employeeStore.CreateEmployee(employee);
             return employee;
         }
+
+        public async Task<Employee> UpdateEmployee(Employee updateEmployee)
+        {
+            await _employeeStore.UpdateEmployee(updateEmployee);
+            return updateEmployee;
+        }
     }
 }
