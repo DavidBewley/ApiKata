@@ -18,10 +18,20 @@ namespace EmployeeApi.Controllers
         }
 
         [HttpGet]
-        [Route("{id}")]
-        public async Task<IActionResult> Get(Guid id)
+        public IActionResult Get()
         {
-            var employee = await _employeeProcessor.FindEmployee(id);
+            var employee = _employeeProcessor.FindEmployees();
+            if (employee == null)
+                return NoContent();
+
+            return Ok(employee);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public IActionResult Get(Guid id)
+        {
+            var employee = _employeeProcessor.FindEmployee(id);
             if (employee == null)
                 return NoContent();
 
@@ -29,27 +39,39 @@ namespace EmployeeApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Employee employee)
+        public IActionResult Post([FromBody] Employee employee)
         {
             if (string.IsNullOrEmpty(employee.Name) || employee.StartDate == DateTime.MinValue)
                 return BadRequest("Name or start date is missing");
 
-            var createdEmployee = await _employeeProcessor.CreateEmployee(employee);
+            var createdEmployee = _employeeProcessor.CreateEmployee(employee);
 
             return Ok(createdEmployee);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] Employee employee)
+        public IActionResult Put([FromBody] Employee employee)
         {
-            return StatusCode(501);
+            if (string.IsNullOrEmpty(employee.Name) || employee.StartDate == DateTime.MinValue)
+                return BadRequest("Name or start date is missing");
+
+            var updateEmployee = _employeeProcessor.UpdateEmployee(employee);
+            
+            if(updateEmployee == null)
+                return NotFound("Employee does not exist");
+
+            return Ok(updateEmployee);
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public IActionResult Delete(Guid id)
         {
-            return StatusCode(501);
+            var deleteEmployee = _employeeProcessor.DeleteEmployee(id);
+            if (deleteEmployee == null)
+                return NotFound("Employee does not exist");
+
+            return Ok();
         }
     }
 }

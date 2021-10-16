@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Models;
 using Core.Services;
@@ -14,20 +15,37 @@ namespace Core.Processors
             _employeeStore = employeeStore;
         }
 
-        public async Task<Employee> FindEmployee(Guid id)
-            => await _employeeStore.FindEmployee(id);
+        public List<Employee> FindEmployees()
+            => _employeeStore.FindEmployees();
 
-        public async Task<Employee> CreateEmployee(Employee employee)
+        public Employee FindEmployee(Guid id)
+            => _employeeStore.FindEmployee(id);
+
+        public Employee CreateEmployee(Employee employee)
         {
             employee.Id = Guid.NewGuid();
-            await _employeeStore.CreateEmployee(employee);
+            _employeeStore.CreateEmployee(employee);
             return employee;
         }
 
-        public async Task<Employee> UpdateEmployee(Employee updateEmployee)
+        public Employee UpdateEmployee(Employee updateEmployee)
         {
-            await _employeeStore.UpdateEmployee(updateEmployee);
+            var storedEmployee = _employeeStore.FindEmployee(updateEmployee.Id);
+            if (storedEmployee == null)
+                return null;
+
+            _employeeStore.UpdateEmployee(updateEmployee);
             return updateEmployee;
+        }
+
+        public Employee DeleteEmployee(Guid id)
+        {
+            var storedEmployee = _employeeStore.FindEmployee(id);
+            if (storedEmployee == null)
+                return null;
+
+            _employeeStore.DeleteEmployee(id);
+            return storedEmployee;
         }
     }
 }

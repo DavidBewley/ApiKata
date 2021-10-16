@@ -30,10 +30,10 @@ namespace Tests
                 _employeeStore = new Mock<IEmployeeStore>();
                 _employeeStore
                     .Setup(s => s.FindEmployee(It.IsAny<Guid>()))
-                    .ReturnsAsync(_expectedEmployee);
+                    .Returns(_expectedEmployee);
 
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _processedEmployee = processor.FindEmployee(_expectedEmployee.Id).Result;
+                _processedEmployee = processor.FindEmployee(_expectedEmployee.Id);
             }
 
             [Fact]
@@ -61,7 +61,7 @@ namespace Tests
 
                 _searchId = Guid.NewGuid();
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _processedEmployee = processor.FindEmployee(_searchId).Result;
+                _processedEmployee = processor.FindEmployee(_searchId);
             }
 
             [Fact]
@@ -91,7 +91,7 @@ namespace Tests
                     .Callback<Employee>(e => _callBackEmployee = e);
 
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _processedEmployee = processor.CreateEmployee(createEmployee).Result;
+                _processedEmployee = processor.CreateEmployee(createEmployee);
             }
 
             [Fact]
@@ -120,7 +120,7 @@ namespace Tests
                     .Callback<Employee>(e => _callBackEmployee = e);
 
                 var processor = new EmployeeProcessor(_employeeStore.Object);
-                _processedEmployee = processor.UpdateEmployee(_updateEmployee).Result;
+                _processedEmployee = processor.UpdateEmployee(_updateEmployee);
             }
 
             [Fact]
@@ -131,6 +131,5 @@ namespace Tests
             public void DataStoreCreateIsCalledWithGivenEmployee()
                 => _employeeStore.Verify(e => e.UpdateEmployee(It.Is<Employee>(cb => cb == _updateEmployee)));
         }
-
     }
 }

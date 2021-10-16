@@ -1,60 +1,71 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Core.Models;
-using Dapper;
-using Microsoft.Data.Sqlite;
 
 namespace Core.Services.Concrete
 {
     public class EmployeeStoreApi : IEmployeeStore
     {
-        private SqliteConnection _databaseConnection;
-        private const string DatabaseName = "Data Source=LocalDb.sqlite";
-        private const string TableName = "Employees";
+        private const string FilePath = "Employees.txt";
 
         public EmployeeStoreApi()
         {
-            OpenDatabaseConnection();
+            var fileExists = File.Exists(FilePath);
 
-            var table = _databaseConnection.Query<string>($"SELECT name FROM sqlite_master WHERE type='table' AND name = '{TableName}';");
-            var tableName = table.FirstOrDefault();
-            if (!string.IsNullOrEmpty(tableName) && tableName == TableName)
+            if (fileExists)
                 return;
 
-            _databaseConnection.Execute($"Create Table [{TableName}] (" +
-                                       "[Id] uniqueidentifier NOT NULL," +
-                                       "[Name] VARCHAR(100) NOT NULL," +
-                                       "[StartDate] Date NOT NULL" +
-                                       ");");
+            using (File.Create(FilePath));
         }
 
-        public async Task<Employee> FindEmployee(Guid id)
+        public List<Employee> FindEmployees()
         {
-            OpenDatabaseConnection();
+            var lines = File.ReadAllLines(FilePath);
+            lines = lines.Where(l => !string.IsNullOrEmpty(l)).ToArray();
 
-            return (await _databaseConnection.QueryAsync<Employee>($"SELECT rowid AS [Id],[Name],[StartDate] FROM [{TableName}] WHERE [Id] = '{id}';")).FirstOrDefault();
+            return lines
+                .Select(line => line.Split(','))
+                .Select(lineSplit => new Employee(Guid.Parse(lineSplit[0]), lineSplit[1], DateTime.Parse(lineSplit[2])))
+                .ToList();
         }
 
-        public async Task CreateEmployee(Employee employee)
+        public Employee FindEmployee(Guid id)
         {
-            OpenDatabaseConnection();
-            await _databaseConnection.ExecuteAsync($"INSERT INTO [{TableName}] ([Id], [Name], [StartDate])" + "VALUES (@Id, @Name, @StartDate);", employee);
+            var allEmployees = FindEmployees();
+            return allEmployees.FirstOrDefault(e => e.Id == id);
         }
 
-        public async Task UpdateEmployee(Employee employee)
+        public void CreateEmployee(Employee employee)
         {
-            OpenDatabaseConnection();
-            await _databaseConnection.ExecuteAsync($"UPDATE [{TableName}] SET [Name] = @Name, [StartDate] = @StartDate WHERE [Id] = @Id;", employee);
+            using (var sw = File.AppendText(FilePath))
+                WriteEmployee(sw, employee);
         }
 
-        public async Task DeleteEmployee(Guid id)
+        public void UpdateEmployee(Employee employee)
         {
-            OpenDatabaseConnection();
-            await _databaseConnection.ExecuteAsync($"DELETE FROM [{TableName}] WHERE [Id] = @id;", id);
+            var allEmployees = FindEmployees();
+            allEmployees = allEmployees.Where(e => e.Id != employee.Id).ToList();
+            allEmployees.Add(employee);
+            WriteAllEmployees(allEmployees);
         }
 
-        private void OpenDatabaseConnection() 
-            => _databaseConnection = new SqliteConnection(DatabaseName);
+        public void DeleteEmployee(Guid id)
+        {
+            var allEmployees = FindEmployees();
+            allEmployees = allEmployees.Where(e => e.Id != id).ToList();
+            WriteAllEmployees(allEmployees);
+        }
+
+        private void WriteAllEmployees(List<Employee> employees)
+        {
+            using (var sw = File.CreateText(FilePath))
+                foreach (var employee in employees)
+                    WriteEmployee(sw, employee);
+        }
+
+        private void WriteEmployee(StreamWriter sw, Employee employee)
+            => sw.WriteLine($"{employee.Id},{employee.Name},{employee.StartDate}");
     }
 }
